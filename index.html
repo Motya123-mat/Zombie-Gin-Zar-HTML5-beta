@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Zombie Gin Zar</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: #1a2a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+            margin: 0;
+        }
+        #game {
+            width: 100%;
+            max-width: 500px;
+            height: 90vh;
+            background: #2a3a2a;
+            border-radius: 30px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 3px solid #5f8f5f;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        #top-bar {
+            background: #1e2b1e;
+            color: #cfc;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        #currency-zombie { color: #ffd966; }
+        #currency-rainbow { color: #ff99ff; margin-left: 10px; }
+        #player-name { color: #b3ffb3; }
+        #fullscreen-btn {
+            background: none;
+            border: 2px solid #5f8f5f;
+            color: white;
+            font-size: 24px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        #tabs {
+            display: flex;
+            background: #1f2f1f;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .tab-btn {
+            flex: 1;
+            min-width: 70px;
+            background: #2f422f;
+            border: none;
+            color: #ddd;
+            padding: 15px 0;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .tab-btn.active {
+            background: #3f5f3f;
+            color: #fff;
+        }
+        #screen {
+            flex: 1;
+            background: #253225;
+            padding: 15px;
+            overflow-y: auto;
+            color: #fff;
+        }
+        .screen {
+            display: none;
+            height: 100%;
+        }
+        .screen.active { display: block; }
+        .grid-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .item-card {
+            background: #2d402d;
+            border: 2px solid #5f7f5f;
+            border-radius: 15px;
+            padding: 12px;
+            text-align: center;
+        }
+        .item-card button {
+            background: #5f8f5f;
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            margin-top: 8px;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .item-card button:disabled {
+            background: #3f5f3f;
+            opacity: 0.5;
+        }
+        .repair-btn {
+            background: #afaf5f !important;
+            color: #1f2f1f !important;
+        }
+        .mode-btn {
+            background: #3f5f3f;
+            border: 2px solid #afaf5f;
+            color: white;
+            font-size: 20px;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 30px;
+            width: 100%;
+            cursor: pointer;
+        }
+        .back-btn {
+            background: #5f3f3f;
+            border: 2px solid #af5f5f;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+        .attack-btn {
+            background: #af2f2f;
+            border: none;
+            color: white;
+            font-size: 24px;
+            padding: 20px;
+            border-radius: 50px;
+            width: 100%;
+            margin: 15px 0;
+            cursor: pointer;
+        }
+        .weapon-selector {
+            display: flex;
+            overflow-x: auto;
+            gap: 10px;
+            padding: 10px 0;
+            scroll-snap-type: x mandatory;
+        }
+        .weapon-option {
+            flex: 0 0 auto;
+            width: 120px;
+            background: #3f5f3f;
+            border: 2px solid #8faf8f;
+            border-radius: 25px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            scroll-snap-align: start;
+        }
+        .weapon-option.selected {
+            background: #afaf5f;
+            color: #1f2f1f;
+        }
+        .weapon-option.cooldown {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .trade-input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 20px;
+            border: none;
+            background: #3a4f3a;
+            color: white;
+            font-size: 16px;
+            margin: 8px 0;
+        }
+        .trade-btn {
+            background: #5f8f5f;
+            border: none;
+            padding: 15px;
+            border-radius: 25px;
+            width: 100%;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        .message-box {
+            background: #2f2f1f;
+            border: 2px solid #afaf5f;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .profile-info {
+            background: #2f422f;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+        }
+        .avatar-selector {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .avatar-option {
+            font-size: 50px;
+            cursor: pointer;
+            padding: 10px;
+            border: 3px solid transparent;
+            border-radius: 15px;
+        }
+        .avatar-option.selected {
+            border-color: #afaf5f;
+            background: #3f5f3f;
+        }
+        .edit-name {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .edit-name input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 20px;
+            border: none;
+            background: #3a4f3a;
+            color: white;
+        }
+        .edit-name button {
+            background: #5f8f5f;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .glass-panel {
+            background: rgba(35, 60, 35, 0.7);
+            backdrop-filter: blur(10px);
+            border: 2px solid #9fcf9f;
+            border-radius: 36px;
+            padding: 22px;
+            margin: 20px 0;
+            box-shadow: 0 15px 25px -8px black;
+        }
+    </style>
+</head>
+<body>
+<div id="game">
+    <div id="top-bar">
+        <span id="player-name">Gin Zar</span>
+        <span>
+            <span id="currency-zombie">💰 <span id="money">1000</span></span>
+            <span id="currency-rainbow">🌈 <span id="rainbow-money">0</span></span>
+        </span>
+        <button id="fullscreen-btn">⛶</button>
+    </div>
+    <div id="tabs">
+        <button class="tab-btn active" data-tab="main">🏠</button>
+        <button class="tab-btn" data-tab="shop">🛒</button>
+        <button class="tab-btn" data-tab="limited">✨</button>
+        <button class="tab-btn" data-tab="inventory">🎒</button>
+        <button class="tab-btn" data-tab="units">⚙️</button>
+        <button class="tab-btn" data-tab="craft">🔨</button>
+        <button class="tab-btn" data-tab="promo">🎁</button>
+        <button class="tab-btn" data-tab="trade">🔄</button>
+        <button class="tab-btn" data-tab="profile">👤</button>
+    </div>
+    <div id="screen">
+        <!-- Главная -->
+        <div id="main-screen" class="screen active">
+            <button class="mode-btn" data-mode="kill25">🔫 Убей 25</button>
+            <button class="mode-btn" data-mode="farm">💰 Фарм (15000)</button>
+            <button class="mode-btn" data-mode="tower">🛡️ Tower Defense</button>
+        </div>
+        
+        <!-- Магазин -->
+        <div id="shop-screen" class="screen">
+            <h2>🛒 Магазин</h2>
+            <div id="weapon-shop" class="grid-list"></div>
+        </div>
+        
+        <!-- Лимитированный -->
+        <div id="limited-screen" class="screen">
+            <h2>✨ Лимитированный</h2>
+            <div id="limited-shop" class="grid-list"></div>
+        </div>
+        
+        <!-- Инвентарь -->
+        <div id="inventory-screen" class="screen">
+            <h2>🎒 Инвентарь</h2>
+            <div id="inventory-list" class="grid-list"></div>
+        </div>
+        
+        <!-- Юниты -->
+        <div id="units-screen" class="screen">
+            <h2>⚙️ Юниты</h2>
+            <div id="units-shop" class="grid-list"></div>
+        </div>
+
+        <!-- Мастерская (крафт) -->
+        <div id="craft-screen" class="screen">
+            <h2>🔨 Мастерская</h2>
+            <div class="glass-panel">
+                <h3>Создать предмет</h3>
+                <select id="craft-recipe" class="trade-input"></select>
+                <button id="craft-button" class="trade-btn">Создать</button>
+                <div id="craft-message" class="message-box"></div>
+            </div>
+        </div>
+        
+        <!-- Промокоды -->
+        <div id="promo-screen" class="screen">
+            <h2>🎁 Промокоды</h2>
+            <input type="text" id="promo-code" placeholder="Введите код" class="trade-input">
+            <button id="apply-promo" class="trade-btn">Активировать</button>
+            <div id="promo-message" class="message-box"></div>
+            <div id="password-dialog" style="display:none; margin-top:10px;">
+                <input type="password" id="promo-password" placeholder="Пароль" class="trade-input" style="width:70%;">
+                <button id="submit-password" class="trade-btn" style="width:25%;">OK</button>
+            </div>
+        </div>
+        
+        <!-- Обмен -->
+        <div id="trade-screen" class="screen">
+            <h2>🔄 Обмен</h2>
+            <button id="create-trade-link" class="trade-btn">🔗 Создать ссылку</button>
+            <div id="trade-link-container" style="display:none;">
+                <input type="text" id="trade-link" readonly class="trade-input">
+                <small>Ссылка действительна 10 минут</small>
+            </div>
+            <input type="text" id="accept-link" placeholder="Вставьте ссылку друга" class="trade-input">
+            <button id="accept-trade" class="trade-btn">📥 Подключиться</button>
+            <div id="my-offer-section" style="display:none;">
+                <h3>Моё предложение</h3>
+                <select id="offer-weapon" class="trade-input">
+                    <option value="">— нет —</option>
+                </select>
+                <input type="number" id="offer-zombie" value="0" min="0" class="trade-input" placeholder="Zombie Coins">
+                <input type="number" id="offer-rainbow" value="0" min="0" class="trade-input" placeholder="Rainbow Coins">
+                <button id="send-offer" class="trade-btn">📤 Отправить</button>
+            </div>
+            <div id="trade-status" class="message-box"></div>
+        </div>
+        
+        <!-- Профиль -->
+        <div id="profile-screen" class="screen">
+            <h2>👤 Профиль</h2>
+            <div class="profile-info">
+                <div class="avatar-selector">
+                    <span class="avatar-option" data-avatar="🧟">🧟</span>
+                    <span class="avatar-option" data-avatar="🧑">🧑</span>
+                    <span class="avatar-option" data-avatar="👨‍🚀">👨‍🚀</span>
+                </div>
+                <div class="edit-name">
+                    <input type="text" id="new-name" placeholder="Новое имя">
+                    <button id="change-name-btn">Изменить</button>
+                </div>
+                <p>Имя: <span id="current-name"></span> <span id="current-avatar"></span></p>
+                <p>Max волн: <span id="profile-waves">0</span></p>
+            </div>
+        </div>
+        
+        <!-- Битва -->
+        <div id="battle-screen" class="screen">
+            <button class="back-btn" id="back-to-main">⬅ Назад</button>
+            <div id="battle-content"></div>
+        </div>
+    </div>
+</div>
+<script src="security.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
